@@ -167,18 +167,6 @@ The audio design follows the visual structure:
 - Boids reveal → short discovery cue
 - ants teaser → closing notes
 
-## Narration
-
-The narration is intentionally kept separate so the voice can be generated in ElevenLabs and mixed later.
-
-The current script is available in [`narration.txt`](narration.txt).
-
-Opening line:
-
-> **Here's how I imagine God creating a flock of birds.**
-
-Suggested delivery: curious, thoughtful, warm, and slightly playful rather than overly dramatic.
-
 ## Scientific note
 
 The animation is inspired by the Boids model of flocking behavior, commonly described through three local behaviors:
