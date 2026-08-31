@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+<title>CREATION ENGINE — Birds v006 Final</title>
+<style>
+:root{
+  --white:#f7fbff; --gold:#ffca58; --cyan:#00eaff; --blue:#3574ff;
+  --violet:#9b63ff; --orange:#ff6f3d; --green:#35f0a0;
+}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#02030a;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--white)}
+body{display:grid;place-items:center}
+#phone{position:relative;width:min(100vw,56.25vh);height:min(177.777vw,100vh);aspect-ratio:9/16;overflow:hidden;background:#030514;box-shadow:0 0 90px rgba(0,0,0,.8)}
+canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+#ui{position:absolute;inset:0;pointer-events:none}
+.safe{position:absolute;left:6.5%;right:6.5%;top:4.5%;bottom:5.5%}
+#brand{position:absolute;left:0;top:0;font:800 10px/1.2 ui-monospace,Consolas,monospace;letter-spacing:.22em;color:rgba(255,255,255,.67)}
+#brand b{color:var(--gold)}
+#day{position:absolute;right:0;top:0;text-align:right;font:650 9px/1.45 ui-monospace,Consolas,monospace;letter-spacing:.12em;color:rgba(255,255,255,.38)}
+#terminal{position:absolute;left:0;right:0;top:6.5%;padding:12px 14px;border:1px solid rgba(255,255,255,.10);border-radius:14px;background:rgba(3,6,18,.61);backdrop-filter:blur(11px);box-shadow:0 12px 32px rgba(0,0,0,.22);opacity:0;transform:translateY(-7px);transition:opacity .28s ease,transform .28s ease,border-color .28s ease}
+#terminal.show{opacity:1;transform:translateY(0)}
+#terminal[data-accent="cyan"]{border-color:rgba(0,234,255,.48);box-shadow:0 0 34px rgba(0,234,255,.12)}
+#terminal[data-accent="blue"]{border-color:rgba(53,116,255,.50);box-shadow:0 0 34px rgba(53,116,255,.13)}
+#terminal[data-accent="violet"]{border-color:rgba(155,99,255,.50);box-shadow:0 0 34px rgba(155,99,255,.13)}
+#terminal[data-accent="orange"]{border-color:rgba(255,111,61,.50);box-shadow:0 0 34px rgba(255,111,61,.13)}
+#terminal[data-accent="green"]{border-color:rgba(53,240,160,.50);box-shadow:0 0 34px rgba(53,240,160,.13)}
+.dots{display:flex;gap:5px;margin-bottom:7px}.dots i{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.18)}
+#code{white-space:pre-wrap;font:650 12px/1.52 ui-monospace,Consolas,monospace;color:#edf6ff}.prompt{color:var(--gold)}.dim{color:#8293ad}
+#lower{position:absolute;left:0;right:0;bottom:2%;opacity:0;transform:translateY(12px);transition:opacity .26s ease,transform .26s ease}
+#lower.show{opacity:1;transform:translateY(0)}
+#lower .box{position:relative;padding:16px 18px 17px;border-radius:16px;background:linear-gradient(180deg,rgba(4,7,20,.80),rgba(3,5,14,.92));border:1px solid rgba(255,255,255,.11);box-shadow:0 16px 44px rgba(0,0,0,.40);overflow:hidden}
+#lower .line{position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--accent,var(--gold));box-shadow:0 0 18px var(--accent,var(--gold))}
+#lower .kicker{font:900 9px/1 ui-monospace,Consolas,monospace;letter-spacing:.22em;color:var(--accent,var(--gold));margin-bottom:8px}
+#lower .title{font-weight:930;font-size:clamp(25px,6.6vw,40px);line-height:.98;letter-spacing:-.045em;text-wrap:balance}
+#lower .sub{margin-top:9px;font-size:clamp(12px,3.25vw,17px);line-height:1.35;color:rgba(255,255,255,.73);max-width:34ch}
+#presence{position:absolute;left:50%;top:19.5%;width:72px;height:72px;transform:translate(-50%,-50%);opacity:.78;filter:drop-shadow(0 0 22px rgba(255,202,88,.38));transition:opacity .4s ease}
+#presence:before{content:"";position:absolute;inset:18px;border-radius:50%;background:radial-gradient(circle,#fff7cf 0%,#ffd86a 34%,rgba(255,180,40,.46) 58%,rgba(255,200,87,0) 78%);animation:pulse 2.4s ease-in-out infinite}
+#presence:after{content:"";position:absolute;left:50%;top:50%;width:1px;height:260px;transform:translate(-50%,0);background:linear-gradient(rgba(255,211,112,.38),rgba(255,211,112,0));filter:blur(.4px)}
+@keyframes pulse{0%,100%{transform:scale(.92);opacity:.75}50%{transform:scale(1.12);opacity:1}}
+#startAudio{position:absolute;inset:0;z-index:30;display:grid;place-items:center;background:radial-gradient(circle at 50% 32%,rgba(255,202,88,.20),rgba(53,116,255,.14) 28%,rgba(2,3,10,.98) 72%);pointer-events:auto}
+#startAudio .card{width:76%;padding:29px 23px;border:1px solid rgba(255,202,88,.26);border-radius:23px;background:rgba(4,6,18,.88);backdrop-filter:blur(12px);box-shadow:0 0 70px rgba(53,116,255,.16),0 22px 60px rgba(0,0,0,.46);text-align:center}
+#startAudio .eyebrow{font:850 9px/1.2 ui-monospace,Consolas,monospace;letter-spacing:.24em;color:var(--gold);margin-bottom:10px}
+#startAudio h1{margin:0;font-size:clamp(29px,7.5vw,43px);line-height:1;letter-spacing:-.045em}
+#startAudio p{margin:13px auto 20px;max-width:28ch;font-size:12.5px;line-height:1.48;color:rgba(255,255,255,.62)}
+#startAudio button{appearance:none;border:0;border-radius:999px;padding:14px 21px;background:linear-gradient(90deg,var(--blue),var(--violet));color:white;font:900 10px/1 ui-monospace,Consolas,monospace;letter-spacing:.1em;cursor:pointer;box-shadow:0 0 36px rgba(53,116,255,.34)}
+#error{display:none;position:absolute;left:7%;right:7%;top:18%;padding:14px;border-radius:12px;background:#47131a;color:#ffe1e4;font:650 12px/1.5 ui-monospace,Consolas,monospace;z-index:40}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div id="phone">
+  <canvas id="canvas"></canvas>
+  <div id="startAudio">
+    <div class="card">
+      <div class="eyebrow">CREATION ENGINE</div>
+      <h1>Build the flock.</h1>
+      <p>Start the visual sequence. The exported version uses a separate cinematic soundtrack.</p>
+      <button id="startBtn">START CREATION</button>
+    </div>
+  </div>
+  <div id="ui">
+    <div class="safe">
+      <div id="brand"><b>CREATION</b> ENGINE</div>
+      <div id="day">EARTH / DAY 5<br>BUILD 006</div>
+      <div id="terminal" data-accent="cyan"><div class="dots"><i></i><i></i><i></i></div><div id="code"></div></div>
+      <div id="presence"></div>
+      <div id="lower"><div class="box"><div class="line"></div><div class="kicker"></div><div class="title"></div><div class="sub"></div></div></div>
+    </div>
+    <div id="error"></div>
+  </div>
+</div>
+<script>
+'use strict';
+(() => {
+try {
+const canvas=document.getElementById('canvas'),ctx=canvas.getContext('2d');
+const phone=document.getElementById('phone');
+const terminal=document.getElementById('terminal');
+const lower=document.getElementById('lower');
+const startOverlay=document.getElementById('startAudio');
+const presence=document.getElementById('presence');
+const FILM_MS=41000;
+const P={count:650,maxSpeed:118,perception:34,size:3.2,sep:false,ali:false,coh:false,flow:false};
+const maxForce=90,margin=72;
+let W=0,H=0,DPR=1,boids=[],grid=new Map(),cellSize=34,filmStart=performance.now(),currentBeat=-1,scene='idle',sceneStarted=performance.now(),flash=0,lastTime=performance.now(),flowTarget={x:0,y:0},flowStart=[];
+const beats=[
+ {at:0,scene:'boot'},
+ {at:2600,scene:'create'},
+ {at:6200,scene:'chaos'},
+ {at:9000,scene:'sep'},
+ {at:14000,scene:'ali'},
+ {at:19000,scene:'coh'},
+ {at:24000,scene:'flow'},
+ {at:32000,scene:'science'},
+ {at:37000,scene:'next'}
+];
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const mag=(x,y)=>Math.hypot(x,y)||1;
+function resize(){const r=phone.getBoundingClientRect();W=Math.max(1,Math.round(r.width));H=Math.max(1,Math.round(r.height));DPR=Math.min(2,window.devicePixelRatio||1);canvas.width=Math.round(W*DPR);canvas.height=Math.round(H*DPR);canvas.style.width=W+'px';canvas.style.height=H+'px';ctx.setTransform(DPR,0,0,DPR,0,0);flowTarget.x=W/2;flowTarget.y=H*.56}
+class Boid{
+ constructor(originX=W/2,originY=H*.39){const r=Math.random()*16,a=Math.random()*Math.PI*2;this.x=originX+Math.cos(a)*r;this.y=originY+Math.sin(a)*r;const va=Math.random()*Math.PI*2,s=45+Math.random()*50;this.vx=Math.cos(va)*s;this.vy=Math.sin(va)*s;this.ax=0;this.ay=0;}
+ avoidEdges(){let dx=0,dy=0;if(this.x<margin)dx=(margin-this.x)/margin;else if(this.x>W-margin)dx=-(this.x-(W-margin))/margin;if(this.y<H*.24)dy=(H*.24-this.y)/margin;else if(this.y>H*.78)dy=-(this.y-(H*.78))/margin;if(!dx&&!dy)return[0,0];const m=mag(dx,dy);return[dx/m*maxForce*.82,dy/m*maxForce*.82]}
+ steer(tx,ty,strength=1){let m=mag(tx,ty),dx=tx/m*P.maxSpeed-this.vx,dy=ty/m*P.maxSpeed-this.vy,dm=mag(dx,dy),lim=maxForce*strength;if(dm>lim){dx=dx/dm*lim;dy=dy/dm*lim}return[dx,dy]}
+ flock(){const per=P.perception,per2=per*per,sep2=(per*.48)**2;let aliX=0,aliY=0,aliN=0,cohX=0,cohY=0,cohN=0,sepX=0,sepY=0,sepN=0;const cx=Math.floor(this.x/cellSize),cy=Math.floor(this.y/cellSize);for(let gx=cx-1;gx<=cx+1;gx++)for(let gy=cy-1;gy<=cy+1;gy++){const cell=grid.get(gx*100003+gy);if(!cell)continue;for(const o of cell){if(o===this)continue;const dx=this.x-o.x,dy=this.y-o.y,d2=dx*dx+dy*dy;if(d2<per2){aliX+=o.vx;aliY+=o.vy;aliN++;cohX+=o.x;cohY+=o.y;cohN++;if(d2<sep2&&d2>1){sepX+=dx/d2;sepY+=dy/d2;sepN++}}}}
+ let[ex,ey]=this.avoidEdges();this.ax=ex;this.ay=ey;if(P.sep&&sepN){const[x,y]=this.steer(sepX/sepN,sepY/sepN,1.05);this.ax+=x*1.55;this.ay+=y*1.55}if(P.ali&&aliN){const[x,y]=this.steer(aliX/aliN,aliY/aliN,.86);this.ax+=x*1.18;this.ay+=y*1.18}if(P.coh&&cohN){const[x,y]=this.steer(cohX/cohN-this.x,cohY/cohN-this.y,.66);this.ax+=x*.93;this.ay+=y*.93}if(P.flow){const[x,y]=this.steer(flowTarget.x-this.x,flowTarget.y-this.y,.50);this.ax+=x*.48;this.ay+=y*.48}}
+ update(dt){this.vx+=this.ax*dt;this.vy+=this.ay*dt;const m=mag(this.vx,this.vy);if(m>P.maxSpeed){this.vx=this.vx/m*P.maxSpeed;this.vy=this.vy/m*P.maxSpeed}this.x+=this.vx*dt;this.y+=this.vy*dt;this.x=clamp(this.x,0,W);this.y=clamp(this.y,H*.20,H*.80)}
+ draw(){const a=Math.atan2(this.vy,this.vx),s=P.size;ctx.save();ctx.translate(this.x,this.y);ctx.rotate(a);ctx.beginPath();ctx.moveTo(-s*1.45,-s*.64);ctx.quadraticCurveTo(-s*.45,-s*.10,0,0);ctx.quadraticCurveTo(-s*.45,s*.10,-s*1.45,s*.64);ctx.strokeStyle=birdColor();ctx.lineWidth=Math.max(1,s*.31);ctx.lineCap='round';ctx.shadowBlur=P.flow?6:2;ctx.shadowColor=accentColor();ctx.stroke();ctx.restore()}
+}
+
+// Stable coordinates for the synchronized final murmuration.
+const shapeU=new Float32Array(P.count),shapeV=new Float32Array(P.count);
+const hash=i=>{const x=Math.sin(i*12.9898+78.233)*43758.5453;return x-Math.floor(x)};
+for(let i=0;i<P.count;i++){
+  shapeU[i]=-1+2*i/(P.count-1)+(hash(i*2)-.5)*.024;
+  shapeV[i]=clamp((hash(i*3)+hash(i*3+1)+hash(i*3+2)-1.5)*1.25,-1.8,1.8);
+}
+function cinematicPoint(i,t){
+  const u=shapeU[i],v=shapeV[i],tau=Math.max(0,t-24);
+  const breathe=1+.055*Math.sin(tau*1.35);
+  const bx=182*u*breathe;
+  const by=48*Math.sin(Math.PI*1.15*u+tau*.34)+14*Math.sin(Math.PI*2.7*u-tau*.24);
+  const dyd=48*Math.PI*1.15*Math.cos(Math.PI*1.15*u+tau*.34)+14*Math.PI*2.7*Math.cos(Math.PI*2.7*u-tau*.24);
+  const dx=182*breathe,nm=Math.hypot(dx,dyd)||1,nx=-dyd/nm,ny=dx/nm;
+  const thick=(15+30*(1-u*u))*(1+.06*Math.sin(tau*1.1)),off=v*thick;
+  let x=bx+nx*off,y=by+ny*off;
+  const cx=W*.5+112*Math.sin(tau*.48),cy=H*.49+46*Math.sin(tau*.66+.45);
+  const theta=.34*Math.sin(tau*.52)+.10*Math.sin(tau*1.05+.6),cr=Math.cos(theta),sr=Math.sin(theta);
+  const xr=x*cr-y*sr,yr=(x*sr+y*cr)*(1-.10*Math.abs(Math.sin(theta)));
+  return{x:cx+xr,y:cy+yr};
+}
+function drawBirdAt(x,y,x2,y2){
+  const a=Math.atan2(y2-y,x2-x),s=P.size;
+  ctx.save();ctx.translate(x,y);ctx.rotate(a);ctx.beginPath();
+  ctx.moveTo(-s*1.45,-s*.64);ctx.quadraticCurveTo(-s*.45,-s*.10,0,0);ctx.quadraticCurveTo(-s*.45,s*.10,-s*1.45,s*.64);
+  ctx.strokeStyle=birdColor();ctx.lineWidth=Math.max(1,s*.31);ctx.lineCap='round';ctx.shadowBlur=(scene==='flow'||scene==='science')?6:2;ctx.shadowColor=accentColor();ctx.stroke();ctx.restore();
+}
+function drawDisplayBirds(elapsed){
+  const t=elapsed/1000;
+  if(t<24){for(const b of boids)b.draw();return;}
+  const z=clamp((t-24)/2.7,0,1),e=z*z*(3-2*z);
+  for(let i=0;i<boids.length;i++){
+    const start=flowStart[i]||boids[i],q=cinematicPoint(i,t),q2=cinematicPoint(i,t+1/60);
+    const x=start.x*(1-e)+q.x*e,y=start.y*(1-e)+q.y*e;
+    const x2=start.x*(1-e)+q2.x*e,y2=start.y*(1-e)+q2.y*e;
+    drawBirdAt(x,y,x2,y2);
+  }
+}
+
+function accentColor(){return({boot:'#ffca58',create:'#00eaff',chaos:'#ff6f3d',sep:'#3574ff',ali:'#9b63ff',coh:'#ff6f3d',flow:'#35f0a0',science:'#00eaff',next:'#9b63ff'})[scene]||'#ffca58'}
+function birdColor(){if(scene==='chaos')return'rgba(255,226,214,.88)';if(scene==='sep')return'rgba(205,225,255,.92)';if(scene==='ali')return'rgba(232,219,255,.93)';if(scene==='coh')return'rgba(255,222,207,.93)';if(scene==='flow'||scene==='science')return'rgba(230,255,248,.96)';return'rgba(238,245,255,.90)'}
+function hexToRgb(h){const x=h.replace('#','');return[parseInt(x.slice(0,2),16),parseInt(x.slice(2,4),16),parseInt(x.slice(4,6),16)]}
+function drawBackground(now){const c=hexToRgb(accentColor());const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#030615');g.addColorStop(.48,'#071020');g.addColorStop(1,'#02030a');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+ const t=now*.001;ctx.save();for(let i=0;i<54;i++){const x=((i*89.7)%W+Math.sin(t*.09+i)*7+W)%W,y=((i*153.3)%H*.72)+H*.08;const a=.08+.10*(.5+.5*Math.sin(t*.75+i*1.7));ctx.fillStyle=`rgba(210,229,255,${a})`;ctx.beginPath();ctx.arc(x,y,(i%7===0?1.15:.65),0,Math.PI*2);ctx.fill()}ctx.restore();
+ const halo=ctx.createRadialGradient(W*.5,H*.19,0,W*.5,H*.19,W*.44);halo.addColorStop(0,'rgba(255,202,88,.12)');halo.addColorStop(.22,'rgba(255,168,55,.05)');halo.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=halo;ctx.fillRect(0,0,W,H);
+ if(scene==='create'){const age=(now-sceneStarted)/1000,pulse=.76+.24*Math.sin(age*7);const rg=ctx.createRadialGradient(W/2,H*.39,0,W/2,H*.39,W*.40);rg.addColorStop(0,`rgba(255,205,92,${.44*pulse})`);rg.addColorStop(.16,`rgba(0,234,255,${.27*pulse})`);rg.addColorStop(.44,'rgba(53,116,255,.10)');rg.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=rg;ctx.fillRect(0,0,W,H)}
+ const wash=ctx.createRadialGradient(W*.5,H*.52,W*.06,W*.5,H*.52,W*.72);wash.addColorStop(0,`rgba(${c[0]},${c[1]},${c[2]},.10)`);wash.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=wash;ctx.fillRect(0,0,W,H);
+ // subtle golden "creative intent" particles around the presence
+ ctx.save();ctx.globalCompositeOperation='lighter';for(let i=0;i<11;i++){const a=t*.22+i*(Math.PI*2/11),r=22+(i%3)*7;const x=W*.5+Math.cos(a)*r,y=H*.19+Math.sin(a*1.12)*r*.55;ctx.fillStyle=`rgba(255,210,112,${.18+.16*(.5+.5*Math.sin(t*1.4+i))})`;ctx.beginPath();ctx.arc(x,y,1+(i%2)*.45,0,Math.PI*2);ctx.fill()}ctx.restore();
+}
+function drawFlash(){if(flash<=0)return;ctx.fillStyle=`rgba(255,255,255,${Math.min(.30,flash/255)})`;ctx.fillRect(0,0,W,H);flash=Math.max(0,flash-14)}
+function buildGrid(){grid.clear();cellSize=Math.max(16,P.perception);for(const b of boids){const key=Math.floor(b.x/cellSize)*100003+Math.floor(b.y/cellSize);if(!grid.has(key))grid.set(key,[]);grid.get(key).push(b)}}
+function spawnBurst(now){const progress=clamp((now-sceneStarted)/2200,0,1);const eased=1-(1-progress)*(1-progress);const target=Math.floor(P.count*eased);while(boids.length<target)boids.push(new Boid(W/2,H*.39))}
+function setCode(html,show=true,accent='cyan'){document.getElementById('code').innerHTML=html;terminal.dataset.accent=accent;terminal.classList.toggle('show',show)}
+function setLower(k,t,s,accent='#ffca58',show=true){lower.querySelector('.kicker').textContent=k;lower.querySelector('.title').textContent=t;lower.querySelector('.sub').textContent=s;lower.style.setProperty('--accent',accent);lower.classList.toggle('show',show)}
+function resetFilm(){boids=[];flowStart=[];P.sep=P.ali=P.coh=P.flow=false;scene='idle';currentBeat=-1;filmStart=performance.now();sceneStarted=filmStart;setCode('',false);setLower('','','','#ffca58',false)}
+function updateBeat(elapsed){let idx=0;for(let i=0;i<beats.length;i++)if(elapsed>=beats[i].at)idx=i;if(idx!==currentBeat){currentBeat=idx;enterScene(beats[idx].scene)}}
+function enterScene(next){scene=next;sceneStarted=performance.now();setLower('','','','#ffca58',false);presence.style.opacity=(next==='flow'||next==='science')?'.48':'.80';switch(next){
+ case'boot':boids=[];setCode('<span class="dim">SYSTEM BOOT...</span>\n<span class="prompt">&gt;</span> initializing life',true,'cyan');break;
+ case'create':boids=[];setCode('<span class="prompt">&gt;</span> create(<span style="color:#00eaff">"birds"</span>);\n<span class="prompt">&gt;</span> count = <span style="color:#ffca58">650</span>;',true,'cyan');setLower('CREATION','A flock begins.','Not one bird at a time — one system.','#00eaff');flash=115;break;
+ case'chaos':P.sep=P.ali=P.coh=P.flow=false;setCode('<span class="prompt">&gt;</span> run();\n<span style="color:#ff8c69">ERROR: chaos</span>',true,'orange');setLower('PROBLEM','Too much chaos.','The birds exist, but nothing coordinates them.','#ff6f3d');flash=78;break;
+ case'sep':P.sep=true;setCode('<span class="prompt">+</span> separation();\n<span class="dim">// keep personal space</span>',true,'blue');setLower('RULE 01','Don’t get too close.','Nearby birds gently push apart.','#3574ff');flash=66;break;
+ case'ali':P.ali=true;setCode('<span class="prompt">+</span> alignment();\n<span class="dim">// match nearby direction</span>',true,'violet');setLower('RULE 02','Match direction.','Each bird adjusts toward its neighbors.','#9b63ff');flash=66;break;
+ case'coh':P.coh=true;setCode('<span class="prompt">+</span> cohesion();\n<span class="dim">// stay with the flock</span>',true,'orange');setLower('RULE 03','Stay together.','Local attraction keeps the flock connected.','#ff6f3d');flash=72;break;
+ case'flow':P.flow=true;flowStart=boids.map(b=>({x:b.x,y:b.y}));setCode('<span class="prompt">&gt;</span> render_flock();\n<span style="color:#35f0a0">BUILD SUCCESSFUL ✓</span>',true,'green');setLower('RESULT','No leader.','Hundreds of local decisions become one pattern.','#35f0a0');flash=120;break;
+ case'science':setCode('<span class="dim">computer_science:</span>\n<span class="prompt">&gt;</span> BOIDS ALGORITHM',true,'cyan');setLower('EMERGENCE','Simple rules. Complex behavior.','Separation · Alignment · Cohesion','#00eaff');flash=54;break;
+ case'next':setCode('<span class="dim">CREATION COMPLETE ✓</span>\n<span class="prompt">&gt;</span> next(<span style="color:#9b63ff">"ants"</span>);',true,'violet');setLower('NEXT BUILD','ANTS','What could simple rules create next?','#9b63ff');break;
+ }}
+function loop(now){const dt=Math.min(.033,Math.max(.001,(now-lastTime)/1000));lastTime=now;let elapsed=now-filmStart;if(elapsed>=FILM_MS){filmStart=now;elapsed=0;currentBeat=-1;boids=[];P.sep=P.ali=P.coh=P.flow=false;}drawBackground(now);updateBeat(elapsed);if(scene==='create')spawnBurst(now);const t=now*.001;flowTarget.x=W/2+Math.sin(t*.68)*W*.29+Math.sin(t*1.65+1)*W*.07;flowTarget.y=H*.50+Math.cos(t*.86)*H*.13+Math.cos(t*2.1+.5)*H*.035;if(boids.length){buildGrid();for(const b of boids)b.flock();for(const b of boids)b.update(dt);drawDisplayBirds(elapsed)}drawFlash();requestAnimationFrame(loop)}
+function start(){startOverlay.style.display='none';resetFilm()}
+window.addEventListener('resize',resize);window.addEventListener('keydown',e=>{if(e.code==='Space'){e.preventDefault();resetFilm()}});document.getElementById('startBtn').addEventListener('click',start);resize();resetFilm();lastTime=performance.now();requestAnimationFrame(loop);
+const params=new URLSearchParams(location.search);if(params.get('render')==='1'){startOverlay.style.display='none';setTimeout(resetFilm,800)}
+}catch(err){const box=document.getElementById('error');box.style.display='block';box.textContent='ERROR: '+err.message;console.error(err)}
+})();
+</script>
+</body>
+</html>
